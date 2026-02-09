@@ -16,19 +16,23 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 
 app.use(helmet());
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS 
+// Normalize origens permitidas: remove espaços e barras finais para evitar falhas por variações de formato
+const allowedOrigins = (process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',')
   : [
       'http://localhost:3000',
       'http://localhost:3001',
       'http://localhost:3002'
-    ];
+    ])
+  .map(origin => origin.trim().replace(/\/$/, ''))
+  .filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.includes(origin)) {
+    const normalizedOrigin = origin.replace(/\/$/, '');
+
+    if (allowedOrigins.includes(normalizedOrigin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));

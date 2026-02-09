@@ -7,7 +7,7 @@ const errorHandler = (err, req, res, next) => {
   if (!(error instanceof ApiError)) {
     const statusCode = error.statusCode || 500;
     const message = error.message || 'Internal Server Error';
-    error = new ApiError(statusCode, message, false, error.stack);
+    error = new ApiError(statusCode, message, null, false, error.stack);
   }
 
   const errorLog = {
@@ -28,6 +28,7 @@ const errorHandler = (err, req, res, next) => {
   const response = {
     success: false,
     message: error.message,
+    ...(error.details && { errors: error.details }),
     ...(process.env.NODE_ENV === 'development' && { stack: error.stack }),
   };
 

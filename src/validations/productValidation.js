@@ -49,11 +49,15 @@ const updateProductSchema = z.object({
 });
 
 const addImagesSchema = z.object({
-  images: z.array(z.object({
+  images: z.preprocess((val) => {
+    if (val === undefined || val === null) return val;
+    if (Array.isArray(val)) return val;
+    return [val]; // aceita objeto único transformando em array
+  }, z.array(z.object({
     url: z.string().url(),
     is_primary: z.boolean().default(false),
     display_order: z.number().int().min(0).default(0)
-  })).min(1).max(10)
+  })).min(1).max(10))
 });
 
 module.exports = {

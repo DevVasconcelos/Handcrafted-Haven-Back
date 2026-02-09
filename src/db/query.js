@@ -27,6 +27,10 @@ const query = async (text, params = []) => {
 };
 
 const transaction = async (callback) => {
+  if (typeof callback !== 'function') {
+    throw new Error('transaction requires a callback(client) function');
+  }
+
   const client = await pool.connect();
   
   try {

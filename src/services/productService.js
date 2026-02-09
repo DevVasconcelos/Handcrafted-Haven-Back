@@ -34,32 +34,30 @@ const productService = {
     const slug = await this.generateSlug(productData.title);
     
     const { images, ...productFields } = productData;
-    
-    const client = await transaction();
-    
-    try {
+
+    return transaction(async (client) => {
       const productInsertData = {
         seller_id: sellerId,
         ...productFields,
         slug
       };
-      
+
       const insertColumns = Object.keys(productInsertData);
       const insertValues = Object.values(productInsertData);
       const insertPlaceholders = insertColumns.map((_, i) => `$${i + 1}`);
-      
+
       const insertSql = `
         INSERT INTO products (${insertColumns.join(', ')})
         VALUES (${insertPlaceholders.join(', ')})
         RETURNING *
       `;
-      
+
       const productResult = await client.query(insertSql, insertValues);
       const product = productResult.rows[0];
-      
+
       if (images && images.length > 0) {
         const hasExplicitPrimary = images.some(img => img.is_primary);
-        
+
         for (let i = 0; i < images.length; i++) {
           const imageData = {
             product_id: product.id,
@@ -67,29 +65,22 @@ const productService = {
             is_primary: hasExplicitPrimary ? images[i].is_primary : (i === 0),
             display_order: images[i].display_order || i
           };
-          
+
           const imageColumns = Object.keys(imageData);
           const imageValues = Object.values(imageData);
           const imagePlaceholders = imageColumns.map((_, idx) => `$${idx + 1}`);
-          
+
           const imageSql = `
             INSERT INTO product_images (${imageColumns.join(', ')})
             VALUES (${imagePlaceholders.join(', ')})
           `;
-          
+
           await client.query(imageSql, imageValues);
         }
       }
-      
-      await client.query('COMMIT');
-      
+
       return this.getProductById(product.id);
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
-    }
+    });
   },
 
   async getAllProducts(filters = {}, options = {}) {

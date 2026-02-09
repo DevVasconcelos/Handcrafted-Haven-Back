@@ -17,11 +17,15 @@ const createProductSchema = z.object({
   handmade: z.boolean().default(true),
   customizable: z.boolean().default(false),
   gift_wrapping: z.boolean().default(false),
-  images: z.array(z.object({
+  images: z.preprocess((val) => {
+    if (val === undefined || val === null) return val;
+    if (Array.isArray(val)) return val;
+    return [val]; // aceita objeto único transformando em array
+  }, z.array(z.object({
     url: z.string().url(),
     is_primary: z.boolean().default(false),
     display_order: z.number().int().min(0).default(0)
-  })).min(1).max(10).optional()
+  })).min(1).max(10)).optional()
 });
 
 const updateProductSchema = z.object({

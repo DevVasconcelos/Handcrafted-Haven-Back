@@ -35,7 +35,7 @@ const productService = {
     
     const { images, ...productFields } = productData;
 
-    return transaction(async (client) => {
+    const productId = await transaction(async (client) => {
       const productInsertData = {
         seller_id: sellerId,
         ...productFields,
@@ -79,8 +79,11 @@ const productService = {
         }
       }
 
-      return this.getProductById(product.id);
+      return product.id;
     });
+
+    // Busca fora da transação para garantir visibilidade após COMMIT
+    return this.getProductById(productId);
   },
 
   async getAllProducts(filters = {}, options = {}) {

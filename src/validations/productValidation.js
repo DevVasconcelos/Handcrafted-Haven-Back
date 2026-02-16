@@ -20,7 +20,7 @@ const createProductSchema = z.object({
   images: z.preprocess((val) => {
     if (val === undefined || val === null) return val;
     if (Array.isArray(val)) return val;
-    return [val]; // aceita objeto único transformando em array
+    return [val]; // accept single object and wrap as array
   }, z.array(z.object({
     url: z.string().url(),
     is_primary: z.boolean().default(false),
@@ -52,7 +52,7 @@ const addImagesSchema = z.object({
   images: z.preprocess((val) => {
     if (val === undefined || val === null) return val;
     if (Array.isArray(val)) return val;
-    return [val]; // aceita objeto único transformando em array
+    return [val]; // accept single object and wrap as array
   }, z.array(z.object({
     url: z.string().url(),
     is_primary: z.boolean().default(false),

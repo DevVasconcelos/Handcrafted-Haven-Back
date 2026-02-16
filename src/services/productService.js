@@ -28,7 +28,7 @@ const productService = {
   async createProduct(sellerId, productData) {
     const category = await categoryRepository.findById(productData.category_id);
     if (!category) {
-      throw new ApiError(404, 'Categoria não encontrada');
+      throw new ApiError(404, 'Category not found');
     }
 
     const slug = await this.generateSlug(productData.title);
@@ -82,7 +82,7 @@ const productService = {
       return product.id;
     });
 
-    // Busca fora da transação para garantir visibilidade após COMMIT
+    // Fetch outside the transaction to ensure visibility after COMMIT
     return this.getProductById(productId);
   },
 
@@ -100,7 +100,7 @@ const productService = {
     const product = await productRepository.findByIdFull(id);
     
     if (!product) {
-      throw new ApiError(404, 'Produto não encontrado');
+      throw new ApiError(404, 'Product not found');
     }
     
     product.images = await productImageRepository.findByProductId(product.id);
@@ -118,7 +118,7 @@ const productService = {
     const product = await productRepository.findBySlugFull(slug);
     
     if (!product) {
-      throw new ApiError(404, 'Produto não encontrado');
+      throw new ApiError(404, 'Product not found');
     }
     
     product.images = await productImageRepository.findByProductId(product.id);
@@ -139,7 +139,7 @@ const productService = {
   async getProductsByCategoryId(categoryId, options = {}) {
     const category = await categoryRepository.findById(categoryId);
     if (!category) {
-      throw new ApiError(404, 'Categoria não encontrada');
+      throw new ApiError(404, 'Category not found');
     }
     
     const result = await productRepository.findByCategoryIdFull(categoryId, options);
@@ -165,17 +165,17 @@ const productService = {
     const product = await productRepository.findById(id);
     
     if (!product) {
-      throw new ApiError(404, 'Produto não encontrado');
+      throw new ApiError(404, 'Product not found');
     }
     
     if (product.seller_id !== sellerId) {
-      throw new ApiError(403, 'Você não tem permissão para editar este produto');
+      throw new ApiError(403, 'You do not have permission to edit this product');
     }
     
     if (updates.category_id) {
       const category = await categoryRepository.findById(updates.category_id);
       if (!category) {
-        throw new ApiError(404, 'Categoria não encontrada');
+        throw new ApiError(404, 'Category not found');
       }
     }
     
@@ -191,11 +191,11 @@ const productService = {
     const product = await productRepository.findById(id);
     
     if (!product) {
-      throw new ApiError(404, 'Produto não encontrado');
+      throw new ApiError(404, 'Product not found');
     }
     
     if (product.seller_id !== sellerId) {
-      throw new ApiError(403, 'Você não tem permissão para deletar este produto');
+      throw new ApiError(403, 'You do not have permission to delete this product');
     }
     
     const images = await productImageRepository.findByProductId(id);
@@ -209,25 +209,25 @@ const productService = {
     const product = await productRepository.findById(productId);
     
     if (!product) {
-      throw new ApiError(404, 'Produto não encontrado');
+      throw new ApiError(404, 'Product not found');
     }
     
     if (product.seller_id !== sellerId) {
-      throw new ApiError(403, 'Você não tem permissão para adicionar imagens a este produto');
+      throw new ApiError(403, 'You do not have permission to add images to this product');
     }
     
     const currentImages = await productImageRepository.findByProductId(productId);
     const totalImages = currentImages.length + images.length;
     
     if (totalImages > 10) {
-      throw new ApiError(400, 'Um produto pode ter no máximo 10 imagens');
+      throw new ApiError(400, 'A product can have at most 10 images');
     }
     
     const hasExistingPrimary = currentImages.some(img => img.is_primary);
     const hasNewPrimary = images.some(img => img.is_primary);
     
     if (hasExistingPrimary && hasNewPrimary) {
-      throw new ApiError(400, 'Este produto já possui uma imagem primária');
+      throw new ApiError(400, 'This product already has a primary image');
     }
     
     const imagesData = images.map((img, index) => ({
@@ -246,19 +246,19 @@ const productService = {
     const image = await productImageRepository.findById(imageId);
     
     if (!image) {
-      throw new ApiError(404, 'Imagem não encontrada');
+      throw new ApiError(404, 'Image not found');
     }
     
     const product = await productRepository.findById(image.product_id);
     
     if (product.seller_id !== sellerId) {
-      throw new ApiError(403, 'Você não tem permissão para remover esta imagem');
+      throw new ApiError(403, 'You do not have permission to remove this image');
     }
     
     const images = await productImageRepository.findByProductId(image.product_id);
     
     if (images.length === 1) {
-      throw new ApiError(400, 'Um produto deve ter pelo menos uma imagem');
+      throw new ApiError(400, 'A product must have at least one image');
     }
     
     await productImageRepository.deleteById(imageId);
@@ -277,13 +277,13 @@ const productService = {
     const image = await productImageRepository.findById(imageId);
     
     if (!image) {
-      throw new ApiError(404, 'Imagem não encontrada');
+      throw new ApiError(404, 'Image not found');
     }
     
     const product = await productRepository.findById(image.product_id);
     
     if (product.seller_id !== sellerId) {
-      throw new ApiError(403, 'Você não tem permissão para modificar as imagens deste produto');
+      throw new ApiError(403, 'You do not have permission to modify this product\'s images');
     }
     
     await productImageRepository.setPrimary(imageId, image.product_id);
@@ -295,11 +295,11 @@ const productService = {
     const product = await productRepository.findById(id);
     
     if (!product) {
-      throw new ApiError(404, 'Produto não encontrado');
+      throw new ApiError(404, 'Product not found');
     }
     
     if (product.seller_id !== sellerId) {
-      throw new ApiError(403, 'Você não tem permissão para atualizar o estoque deste produto');
+      throw new ApiError(403, 'You do not have permission to update this product\'s stock');
     }
     
     await productRepository.updateStock(id, stock);

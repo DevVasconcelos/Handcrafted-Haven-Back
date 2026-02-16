@@ -36,7 +36,7 @@ const errorHandler = (err, req, res, next) => {
 };
 
 const notFound = (req, res, next) => {
-  const error = ApiError.notFound(`Rota não encontrada: ${req.originalUrl}`);
+  const error = ApiError.notFound(`Route not found: ${req.originalUrl}`);
   next(error);
 };
 

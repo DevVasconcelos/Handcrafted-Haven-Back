@@ -17,7 +17,7 @@ const createCategory = async (categoryData) => {
 
   const slugExists = await categoryRepository.slugExists(finalSlug);
   if (slugExists) {
-    throw new ApiError(409, 'Slug já está em uso');
+    throw new ApiError(409, 'Slug is already in use');
   }
 
   const category = await categoryRepository.create({
@@ -41,7 +41,7 @@ const getAllCategories = async (includeCount = false) => {
 const getCategoryById = async (id) => {
   const category = await categoryRepository.findById(id);
   if (!category) {
-    throw new ApiError(404, 'Categoria não encontrada');
+    throw new ApiError(404, 'Category not found');
   }
   return category;
 };
@@ -49,7 +49,7 @@ const getCategoryById = async (id) => {
 const getCategoryBySlug = async (slug) => {
   const category = await categoryRepository.findBySlug(slug);
   if (!category) {
-    throw new ApiError(404, 'Categoria não encontrada');
+    throw new ApiError(404, 'Category not found');
   }
   return category;
 };
@@ -57,13 +57,13 @@ const getCategoryBySlug = async (slug) => {
 const updateCategory = async (id, categoryData) => {
   const existingCategory = await categoryRepository.findById(id);
   if (!existingCategory) {
-    throw new ApiError(404, 'Categoria não encontrada');
+    throw new ApiError(404, 'Category not found');
   }
 
   if (categoryData.slug) {
     const slugExists = await categoryRepository.slugExists(categoryData.slug, id);
     if (slugExists) {
-      throw new ApiError(409, 'Slug já está em uso');
+      throw new ApiError(409, 'Slug is already in use');
     }
   }
 
@@ -74,7 +74,7 @@ const updateCategory = async (id, categoryData) => {
 const deleteCategory = async (id) => {
   const category = await categoryRepository.findById(id);
   if (!category) {
-    throw new ApiError(404, 'Categoria não encontrada');
+    throw new ApiError(404, 'Category not found');
   }
 
   const deleted = await categoryRepository.deleteById(id);

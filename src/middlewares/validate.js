@@ -12,7 +12,11 @@ const validate = (schema) => {
           field: err.path.join('.'),
           message: err.message,
         }));
-        return next(new ApiError(400, 'Dados inválidos', errors));
+        const firstError = errors[0];
+        const message = firstError
+          ? `${firstError.field || 'field'}: ${firstError.message}`
+          : 'Invalid data';
+        return next(new ApiError(400, message, errors));
       }
       next(error);
     }

@@ -6,17 +6,17 @@ const ApiError = require('../utils/ApiError');
 const uploadService = {
   async uploadImage(file, folder = 'products') {
     if (!file) {
-      throw new ApiError(400, 'Nenhum arquivo fornecido');
+      throw new ApiError(400, 'No file provided');
     }
 
     const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     if (!allowedMimeTypes.includes(file.mimetype)) {
-      throw new ApiError(400, 'Tipo de arquivo não permitido. Use JPEG, PNG, WEBP ou GIF');
+      throw new ApiError(400, 'Unsupported file type. Use JPEG, PNG, WEBP, or GIF');
     }
 
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      throw new ApiError(400, 'Arquivo muito grande. Tamanho máximo: 5MB');
+      throw new ApiError(400, 'File too large. Max size: 5MB');
     }
 
     const fileExtension = path.extname(file.originalname);
@@ -36,18 +36,18 @@ const uploadService = {
         size: file.size,
       };
     } catch (error) {
-      throw new ApiError(500, `Erro ao fazer upload: ${error.message}`);
+      throw new ApiError(500, `Upload failed: ${error.message}`);
     }
   },
 
   async uploadMultipleImages(files, folder = 'products') {
     if (!files || files.length === 0) {
-      throw new ApiError(400, 'Nenhum arquivo fornecido');
+      throw new ApiError(400, 'No file provided');
     }
 
     const maxFiles = 10;
     if (files.length > maxFiles) {
-      throw new ApiError(400, `Máximo de ${maxFiles} arquivos por vez`);
+      throw new ApiError(400, `Maximum of ${maxFiles} files per upload`);
     }
 
     const uploadPromises = files.map(file => this.uploadImage(file, folder));
@@ -62,7 +62,7 @@ const uploadService = {
 
   async deleteImage(pathname) {
     if (!pathname) {
-      throw new ApiError(400, 'Pathname não fornecido');
+      throw new ApiError(400, 'Pathname not provided');
     }
 
     try {
@@ -72,7 +72,7 @@ const uploadService = {
 
       return { deleted: true, pathname };
     } catch (error) {
-      throw new ApiError(500, `Erro ao deletar imagem: ${error.message}`);
+      throw new ApiError(500, `Failed to delete image: ${error.message}`);
     }
   },
 
@@ -104,7 +104,7 @@ const uploadService = {
         uploadedAt: blob.uploadedAt,
       }));
     } catch (error) {
-      throw new ApiError(500, `Erro ao listar imagens: ${error.message}`);
+      throw new ApiError(500, `Failed to list images: ${error.message}`);
     }
   },
 
@@ -113,17 +113,17 @@ const uploadService = {
       const urlObj = new URL(url);
       return urlObj.pathname.substring(1);
     } catch (error) {
-      throw new ApiError(400, 'URL inválida');
+      throw new ApiError(400, 'Invalid URL');
     }
   },
 
   validateImageData(imageData) {
     if (!imageData.url) {
-      throw new ApiError(400, 'URL da imagem é obrigatória');
+      throw new ApiError(400, 'Image URL is required');
     }
 
     if (!imageData.url.startsWith('https://')) {
-      throw new ApiError(400, 'URL da imagem deve usar HTTPS');
+      throw new ApiError(400, 'Image URL must use HTTPS');
     }
 
     return true;

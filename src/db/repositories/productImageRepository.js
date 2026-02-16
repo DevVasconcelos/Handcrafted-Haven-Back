@@ -16,39 +16,51 @@ const productImageRepository = {
     return result;
   },
 
-  async createMany(imagesData) {
+  async createMany(imagesData, externalClient = null) {
     if (!imagesData || imagesData.length === 0) {
       return [];
     }
 
-    const client = await transaction();
-    
-    try {
+    // Permite usar um client já aberto (transação externa) ou criar uma nova transação
+    if (externalClient) {
       const insertedImages = [];
-      
       for (const imageData of imagesData) {
         const columns = Object.keys(imageData);
         const values = Object.values(imageData);
         const placeholders = columns.map((_, i) => `$${i + 1}`);
-        
+
         const sql = `
           INSERT INTO product_images (${columns.join(', ')})
           VALUES (${placeholders.join(', ')})
           RETURNING *
         `;
-        
+
+        const result = await externalClient.query(sql, values);
+        insertedImages.push(result.rows[0]);
+      }
+      return insertedImages;
+    }
+
+    return transaction(async (client) => {
+      const insertedImages = [];
+
+      for (const imageData of imagesData) {
+        const columns = Object.keys(imageData);
+        const values = Object.values(imageData);
+        const placeholders = columns.map((_, i) => `$${i + 1}`);
+
+        const sql = `
+          INSERT INTO product_images (${columns.join(', ')})
+          VALUES (${placeholders.join(', ')})
+          RETURNING *
+        `;
+
         const result = await client.query(sql, values);
         insertedImages.push(result.rows[0]);
       }
-      
-      await client.query('COMMIT');
+
       return insertedImages;
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
-    }
+    });
   },
 
   async findById(id) {
@@ -72,27 +84,19 @@ const productImageRepository = {
   },
 
   async setPrimary(id, productId) {
-    const client = await transaction();
-    
-    try {
+    return transaction(async (client) => {
       await client.query(
         'UPDATE product_images SET is_primary = false WHERE product_id = $1',
         [productId]
       );
-      
+
       const result = await client.query(
         'UPDATE product_images SET is_primary = true WHERE id = $1 RETURNING *',
         [id]
       );
-      
-      await client.query('COMMIT');
+
       return result.rows[0] || null;
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
-    }
+    });
   },
 
   async updateDisplayOrder(id, displayOrder) {
